@@ -1,0 +1,242 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0b0a09;
+  --color-ink-soft: #131110;
+  /* the two colours behind the About section — a deep umber base lifted by
+     a low, wide bronze glow. Warm, so the brass and bone sit inside it. */
+  --color-umber: #0e0b08;
+  --color-ember: #3a2614;
+  --color-bone: #ede7de;
+  --color-bone-dim: #9c948a;
+  --color-hair: #ffffff1a;
+  --color-brass: #c3a06a;
+
+  /* the Services ground — a warm light cream, sophisticated, never pure
+     white. Ink text and brass accents sit on it with full contrast. */
+  --color-cream: #f2ece1;
+  --color-cream-line: #d8cebc;
+
+  /* the quote sections' warm architectural accent — the rust the first
+     headline line rests in, and the brown the darker lines warm to on hover */
+  --color-terra: #a75f34;
+  /* the deep warm brown behind Quote 3 — the darker page of the same
+     portfolio, keyed to the About section's ground, clearly brown not black */
+  --color-cocoa: #241810;
+  /* warm wood brown behind the Start-a-Project contact half (§15B) */
+  --color-wood: #3a2618;
+}
+
+:root {
+  color-scheme: dark;
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  background: var(--color-ink);
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY WEIGHT — the site was set in 300 throughout and read too thin.
+   Both faces ship a 400 and 500, so `font-light` is remapped one step up:
+   every heading and body block gains presence without anything turning bold,
+   and the existing hierarchy (display vs sans, sizes, tracking) is untouched.
+   ───────────────────────────────────────────────────────────────────────── */
+.font-light {
+  font-weight: 400;
+}
+
+/* No scroll until the loader hands over. */
+body[data-locked='true'] {
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  touch-action: pan-y;
+}
+
+/* The About section's ground, sampled off the reference frame: a deep umber
+   field that lifts to a soft olive through the middle, with the ember pooling
+   low and wide underneath the room. Read top to bottom, it is those two
+   colours and nothing else. */
+.bg-about {
+  background-color: var(--color-umber);
+  background-image:
+    radial-gradient(
+      70% 50% at 50% 96%,
+      var(--color-ember) 0%,
+      #241708 40%,
+      rgba(14, 11, 8, 0) 76%
+    ),
+    radial-gradient(85% 65% at 50% 34%, #2a2719 0%, rgba(14, 11, 8, 0) 78%),
+    linear-gradient(to bottom, #080805 0%, #0d0b07 40%, #150f09 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   QUOTE SECTIONS — one shared drafting-paper grid, inverted by ground.
+   Cream pages carry a faint brown grid; the brown page carries a faint
+   cream grid. Built from repeating gradients (no image), and pinned behind
+   the type at very low opacity so it reads as drafting paper, never a table.
+   ───────────────────────────────────────────────────────────────────────── */
+.q-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --q-cell: 3.25rem;
+}
+.q-grid-cream {
+  background-image:
+    repeating-linear-gradient(to right, rgba(122, 74, 44, 0.07) 0 1px, transparent 1px var(--q-cell)),
+    repeating-linear-gradient(to bottom, rgba(122, 74, 44, 0.07) 0 1px, transparent 1px var(--q-cell));
+}
+.q-grid-brown {
+  background-image:
+    repeating-linear-gradient(to right, rgba(237, 231, 222, 0.06) 0 1px, transparent 1px var(--q-cell)),
+    repeating-linear-gradient(to bottom, rgba(237, 231, 222, 0.06) 0 1px, transparent 1px var(--q-cell));
+}
+.bg-cocoa {
+  background-color: var(--color-cocoa);
+}
+
+/* Projects is tied to the About ground: both read --color-umber, so a future
+   change to About's base recolours Projects automatically (correction §25). */
+.bg-about-ground {
+  background-color: var(--color-umber);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   ABOUT — drafting grid over the existing ground (which is unchanged), plus
+   a second copy of the same grid revealed only in a soft circle around the
+   cursor: the drafting paper responding to the designer's hand. The glow
+   layer is pure mask + opacity — no layout, no repaint storm.
+   ───────────────────────────────────────────────────────────────────────── */
+.about-grid,
+.about-grid-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --a-cell: 3.25rem;
+  background-image:
+    repeating-linear-gradient(to right, rgba(237, 231, 222, 0.05) 0 1px, transparent 1px var(--a-cell)),
+    repeating-linear-gradient(to bottom, rgba(237, 231, 222, 0.05) 0 1px, transparent 1px var(--a-cell));
+}
+.about-grid-glow {
+  background-image:
+    repeating-linear-gradient(to right, rgba(237, 231, 222, 0.22) 0 1px, transparent 1px var(--a-cell)),
+    repeating-linear-gradient(to bottom, rgba(237, 231, 222, 0.22) 0 1px, transparent 1px var(--a-cell));
+  -webkit-mask-image: radial-gradient(circle 170px at var(--mx, -300px) var(--my, -300px), #000 0%, transparent 72%);
+  mask-image: radial-gradient(circle 170px at var(--mx, -300px) var(--my, -300px), #000 0%, transparent 72%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PROJECTS — a fine architectural drafting floor receding into the distance.
+   Warm brown lines, low opacity, masked to fade toward the horizon so it
+   reads as depth in the background, never as a table and never brighter than
+   the project boards floating above it.
+   ───────────────────────────────────────────────────────────────────────── */
+/* The architectural floor the boards stand on: a flat grid laid down in 3D and
+   tipped away from the camera, so its lines genuinely converge on a vanishing
+   point rather than sitting as an even 2D lattice. Warm and thin — it reads as
+   the room's floor, never as a decorative overlay — and it is painted behind
+   the whole deck, so it is identical no matter which project is centred. */
+.proj-floor {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 300%;
+  height: 72%;
+  transform: translateX(-50%) perspective(700px) rotateX(58deg);
+  transform-origin: 50% 100%;
+  background-image:
+    repeating-linear-gradient(to right, rgba(206, 148, 90, 0.3) 0 1px, transparent 1px 58px),
+    repeating-linear-gradient(to bottom, rgba(206, 148, 90, 0.3) 0 1px, transparent 1px 58px);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 38%, transparent 88%);
+  mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.5) 38%, transparent 88%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* the left-hand active-project copy settles in each time the centre changes */
+@keyframes proj-info-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+[data-proj-info] {
+  animation: proj-info-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-proj-info] { animation: none; }
+}
+
+/* the thin ruled line in each quote's header, ticked like a drafting scale */
+.q-rule {
+  position: relative;
+  height: 8px;
+}
+.q-rule::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 1px,
+    transparent 1px 2.875rem
+  );
+  opacity: 0.5;
+}
+.q-rule::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.tracking-brand {
+  letter-spacing: 0.42em;
+}
+.tracking-label {
+  letter-spacing: 0.28em;
+}
+
+/* Thin architectural rule that draws itself in. */
+@keyframes hairline-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes scrollcue {
+  0% { transform: translateY(-100%); }
+  55%, 100% { transform: translateY(1000%); }
+}
