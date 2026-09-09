@@ -125,10 +125,10 @@ export function Experience({ reduced = false }) {
           <div className="flex items-end lg:col-span-4 lg:col-start-9">
             <div className="space-y-5">
               <p data-para className="font-sans text-[13px] font-light leading-[1.8] text-ink/70 sm:text-[14px]">
-                With more than 14 years of experience, Konst Design brings together architectural thinking, interior design and 3D visualization to create spaces that are functional, beautiful and personal.
+                With more than 14 years of experience, KONST designs brings together architectural thinking, interior design and 3D visualization to create spaces that are functional, beautiful and personal.
               </p>
               <p data-para className="font-sans text-[13px] font-light leading-[1.8] text-ink/70 sm:text-[14px]">
-                We work from Coimbatore and Dindigul across residential, retail and commercial projects — drawing, detailing and seeing each one through to handover.
+                We work from Coimbatore, Bengaluru and Seelapadi across residential, retail and commercial projects — drawing, detailing and seeing each one through to handover.
               </p>
             </div>
           </div>
@@ -140,7 +140,7 @@ export function Experience({ reduced = false }) {
             <img
               data-img
               src={LIVING_ROOM}
-              alt="Completed living room designed by Konst Design, in warm evening light"
+              alt="Completed living room designed by KONST designs, in warm evening light"
               loading="lazy"
               decoding="async"
               className="absolute inset-0 h-[112%] w-full -translate-y-[6%] object-cover"
@@ -150,7 +150,7 @@ export function Experience({ reduced = false }) {
             <span className="max-w-[70%] font-sans text-[10px] tracking-label text-ink/45">
               COMPLETED LIVING ROOM · WARM EVENING LIGHT
             </span>
-            <span className="font-display text-[14px] font-light italic text-ink/40">Konst Design</span>
+            <span className="font-display text-[14px] font-light italic text-ink/40">KONST designs</span>
           </figcaption>
         </figure>
 

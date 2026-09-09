@@ -22,7 +22,7 @@ export function SiteFooter({ reduced = false }) {
         {/* ── brand ────────────────────────────────────────────────────── */}
         <div data-reveal className="border-b border-bone/12 pb-12">
           <h2 className="font-display text-[clamp(2rem,5vw,3.6rem)] font-light tracking-[0.02em] text-bone">
-            Konst Design
+            KONST designs
           </h2>
           <p className="mt-3 font-sans text-[10px] tracking-label text-brass">
             ARCHITECTURE&nbsp;•&nbsp;INTERIORS&nbsp;•&nbsp;3D&nbsp;VISUALIZATION
@@ -85,7 +85,7 @@ export function SiteFooter({ reduced = false }) {
         {/* ── baseline ─────────────────────────────────────────────────── */}
         <div data-reveal className="mt-14 flex flex-col gap-3 border-t border-bone/12 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-sans text-[9px] tracking-label text-bone/35">
-            © {new Date().getFullYear()} KONST DESIGN · COIMBATORE · DINDIGUL
+            © {new Date().getFullYear()} KONST designs · COIMBATORE · BENGALURU · SEELAPADI
           </p>
           <p className="font-sans text-[9px] tracking-label text-bone/35">
             ARCHITECTURE · INTERIORS · 3D

@@ -236,6 +236,75 @@ canvas {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   CUSTOM CURSOR — an exact dot with a thin ring easing along behind it.
+   Both layers are inert (`pointer-events: none`), so they can never swallow a
+   click. The native cursor is hidden only once the custom one is actually
+   mounted, which happens on pointer devices alone — a touch device never gets
+   `data-cursor="custom"` and so keeps its own behaviour untouched.
+   ───────────────────────────────────────────────────────────────────────── */
+html[data-cursor-mode='custom'],
+html[data-cursor-mode='custom'] * {
+  cursor: none !important;
+}
+
+[data-cursor-dot],
+[data-cursor-ring] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 9999px;
+  will-change: transform;
+}
+
+[data-cursor-dot] {
+  width: 5px;
+  height: 5px;
+  background: var(--color-bone);
+  mix-blend-mode: difference;
+  transition: opacity 0.25s ease;
+}
+
+[data-cursor-ring] {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(237, 231, 222, 0.5);
+  transition:
+    opacity 0.25s ease,
+    width 0.35s var(--ease-settle),
+    height 0.35s var(--ease-settle),
+    border-color 0.35s ease,
+    background-color 0.35s ease;
+}
+
+/* open and warm over anything clickable */
+[data-cursor-ring][data-over='true'] {
+  width: 54px;
+  height: 54px;
+  border-color: var(--color-brass);
+  background: rgba(195, 160, 106, 0.1);
+}
+
+/* tighten while pressed */
+[data-cursor-ring][data-down='true'] {
+  width: 22px;
+  height: 22px;
+}
+[data-cursor-ring][data-over='true'][data-down='true'] {
+  width: 40px;
+  height: 40px;
+}
+
+/* a reader who asks for less motion gets the ring pinned to the pointer */
+@media (prefers-reduced-motion: reduce) {
+  [data-cursor-ring] {
+    transition: opacity 0.25s ease;
+  }
+}
+
 @keyframes scrollcue {
   0% { transform: translateY(-100%); }
   55%, 100% { transform: translateY(1000%); }

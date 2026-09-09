@@ -81,7 +81,7 @@ export function HowWeWork({ reduced = false }) {
             <span className="h-px w-10 bg-cream-line" />
             <span className="font-sans text-[10px] tracking-label text-ink/45">HOW WE WORK</span>
           </div>
-          <p className="mt-8 font-sans text-[10px] tracking-label text-brass">WHY KONST DESIGN?</p>
+          <p className="mt-8 font-sans text-[10px] tracking-label text-brass">WHY KONST designs?</p>
           <h2 className="mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1.0] text-ink">
             Four things we<br />never compromise.
           </h2>
@@ -111,7 +111,7 @@ export function HowWeWork({ reduced = false }) {
                   <div className="aspect-[16/10] w-full">
                     <img
                       src={p.image}
-                      alt={`${p.title} — Konst Design`}
+                      alt={`${p.title} — KONST designs`}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover"

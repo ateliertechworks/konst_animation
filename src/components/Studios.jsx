@@ -29,10 +29,10 @@ const TN = 'M33 71 L44 79 L46 86 L41 92 L34 96 L31 90 L29 82 L30 75 Z'
  *  STUDIOS  ·  a scroll-controlled geographic map beside the two locations
  * ─────────────────────────────────────────────────────────────────────────────
  *  A realistic top-down map, drawn in code: it opens on all of India and, as
- *  the reader scrolls, travels India → Tamil Nadu → Coimbatore + Dindigul,
- *  stopping at a framing that keeps BOTH studio cities in view (never zooming
- *  into one). Two professional pins reveal at the end; tapping either opens the
- *  exact Google Maps location in a new tab. Pinned by a sticky child for the
+ *  the reader scrolls, travels India → south India → the studio cities,
+ *  stopping at a framing that keeps EVERY studio city in view (never zooming
+ *  into one). A professional pin per studio reveals at the end; tapping any of
+ *  them opens that exact Google Maps address in a new tab. Pinned by a sticky child for the
  *  length of the journey, then released — never trapping the reader.
  */
 export function Studios({ viewport, reduced = false }) {
@@ -45,9 +45,11 @@ export function Studios({ viewport, reduced = false }) {
     const ctx = gsap.context((self) => {
       const q = (s) => self.selector(s)
       const group = q('[data-map-group]')[0]
-      const c = proj(STUDIOS[0].coord)
-      const d = proj(STUDIOS[1].coord)
-      const mid = [(c[0] + d[0]) / 2, (c[1] + d[1]) / 2]
+      const pts = STUDIOS.map((s) => proj(s.coord))
+      const mid = [
+        pts.reduce((a, q) => a + q[0], 0) / pts.length,
+        pts.reduce((a, q) => a + q[1], 0) / pts.length,
+      ]
       const S1 = stacked ? 4.4 : 5.2
 
       const frame = (p) => {
@@ -132,13 +134,14 @@ export function Studios({ viewport, reduced = false }) {
 
             {/* pins in a screen-space overlay — constant size, positioned by the
                 zoom transform, revealed only when the journey reaches the end */}
-            {pin(STUDIOS[0], 'coim')}
-            {pin(STUDIOS[1], 'dind')}
+            {STUDIOS.map((s) => pin(s, s.id))}
 
             {/* zoom captions, fixed to the frame */}
             <text data-zoom="india" x="4" y="7" style={{ fontSize: 2.6, letterSpacing: '0.24em' }} className="fill-ink/45 font-sans">INDIA</text>
-            <text data-zoom="state" x="4" y="7" style={{ fontSize: 2.6, letterSpacing: '0.24em', opacity: 0 }} className="fill-ink/45 font-sans">TAMIL NADU</text>
-            <text data-zoom="cities" x="4" y="7" style={{ fontSize: 2.6, letterSpacing: '0.24em', opacity: 0 }} className="fill-terra font-sans">COIMBATORE · DINDIGUL</text>
+            <text data-zoom="state" x="4" y="7" style={{ fontSize: 2.6, letterSpacing: '0.24em', opacity: 0 }} className="fill-ink/45 font-sans">SOUTH INDIA</text>
+            <text data-zoom="cities" x="4" y="7" style={{ fontSize: 2.6, letterSpacing: '0.24em', opacity: 0 }} className="fill-terra font-sans">
+              {STUDIOS.map((s) => s.city.toUpperCase()).join(' · ')}
+            </text>
           </svg>
         </div>
 
@@ -151,10 +154,10 @@ export function Studios({ viewport, reduced = false }) {
               <span className="font-sans text-[10px] tracking-label text-ink/45">STUDIOS</span>
             </div>
             <h2 data-reveal-item className="mt-6 font-display text-[clamp(2rem,4.2vw,3.4rem)] font-light leading-[1.0] text-ink">
-              Two studios.<br />One standard.
+              Three studios.<br />One standard.
             </h2>
             <p data-reveal-item className="mt-5 max-w-[42ch] font-sans text-[13px] font-light leading-[1.8] text-ink/60 sm:text-[14px]">
-              Visit us in Coimbatore or Dindigul — or send us your plan and we will call you back.
+              Visit us in Coimbatore, Bengaluru or Seelapadi — or send us your plan and we will call you back.
             </p>
 
             <div className="mt-10 grid gap-8 sm:grid-cols-2">
@@ -167,7 +170,9 @@ export function Studios({ viewport, reduced = false }) {
                       <span key={l} className="block">{l}</span>
                     ))}
                   </address>
-                  <p className="mt-4 font-sans text-[12.5px] font-light text-ink/75">{s.phone}</p>
+                  {s.phone && (
+                    <p className="mt-4 font-sans text-[12.5px] font-light text-ink/75">{s.phone}</p>
+                  )}
                   <a
                     href={mapsHref(s)}
                     target="_blank"

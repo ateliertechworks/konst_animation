@@ -35,28 +35,44 @@ export const PRINCIPLES = [
   { number: '04', title: 'Personalization', body: "Every project is designed around the client's lifestyle and requirements.", image: '/assets/principles/personalization.webp', side: 'right' },
 ]
 
-/** Exact Google Maps URLs supplied by the brief (§27) — used verbatim by both
- *  the map pins and the "View on Google Maps" links. `coord` is [lat, lng] for
- *  placing the pins on the realistic map. */
+/** The three studios. Each `maps` link is the address above, percent-encoded
+ *  into Google's documented search endpoint, so the pin and the "View on Google
+ *  Maps" link both resolve to the exact address rather than to a guess. `coord`
+ *  is [lat, lng], used only to place the pin on the country-scale map — at that
+ *  zoom a neighbourhood-level fix is well under a pixel. */
 export const STUDIOS = [
   {
     id: 'coimbatore',
     city: 'Coimbatore',
     role: 'Head Studio',
-    lines: ['No. 11, Barathi Nagar,', 'Rathinapuri (PO),', 'Coimbatore – 641027,', 'Tamil Nadu, India.'],
+    lines: ['98, Raju Naidu St,', 'Sivananda Colony, Tatabad,', 'Coimbatore, Tamil Nadu 641012.'],
     phone: PHONE_PRIMARY,
-    maps: 'https://www.google.com/maps/search/No.+11,+Barathi+Nagar,+Rathinapuri,+Coimbatore+641027,+Tamil+Nadu/@11.0024916,76.9623497,13z/data=!3m1!4b1?entry=ttu&g_ep=EgoyMDI2MDkwMi4wIKXMDSoASAFQAw%3D%3D',
-    /* geo coordinates for the realistic map (lat, lng) */
-    coord: [11.0024916, 76.9623497],
+    maps: 'https://www.google.com/maps/search/?api=1&query=98%2C%20Raju%20Naidu%20St%2C%20Sivananda%20Colony%2C%20Tatabad%2C%20Coimbatore%2C%20Tamil%20Nadu%20641012',
+    coord: [11.0168, 76.9558],
   },
   {
-    id: 'dindigul',
-    city: 'Dindigul',
+    id: 'bengaluru',
+    city: 'Bengaluru',
+    role: 'Studio',
+    lines: [
+      'Second Floor, Shop No. S7 & S8,',
+      'AUM Arcade, Doddamara Road,',
+      'Rayasandra Post, Huskur,',
+      'Bengaluru, Karnataka \u2013 560099.',
+    ],
+    /* no phone supplied for this studio — the line is simply not rendered */
+    phone: null,
+    maps: 'https://www.google.com/maps/search/?api=1&query=Second%20Floor%2C%20Shop%20No.%20S7%20%26%20S8%2C%20AUM%20Arcade%2C%20Doddamara%20Road%2C%20Rayasandra%20Post%2C%20Huskur%2C%20Bengaluru%2C%20Karnataka%20560099',
+    coord: [12.856, 77.681],
+  },
+  {
+    id: 'seelapadi',
+    city: 'Seelapadi',
     role: 'Er. Safeeq Ahmed, BE MBA',
-    lines: ['Star Construction,', 'MAK Complex,', 'Old Karur Road,', 'Dindigul – 624001.'],
+    lines: ['734/6, Karur Road,', 'Seelapadi,', 'Tamil Nadu 624001.'],
     phone: PHONE_SECONDARY,
-    maps: 'https://www.google.com/maps/place/Star+Construction/@10.3784149,77.9892183,17z/data=!3m1!4b1!4m6!3m5!1s0x3b00aa67d7d9485b:0xed296cf6bd244c0d!8m2!3d10.3784149!4d77.9892183!16s%2Fg%2F11b7q5f6v2?entry=ttu&g_ep=EgoyMDI2MDkwMi4wIKXMDSoASAFQAw%3D%3D',
-    coord: [10.3784149, 77.9892183],
+    maps: 'https://www.google.com/maps/search/?api=1&query=734%2F6%2C%20Karur%20Road%2C%20Seelapadi%2C%20Tamil%20Nadu%20624001',
+    coord: [10.345, 77.933],
   },
 ]
 

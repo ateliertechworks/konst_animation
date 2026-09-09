@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { LoadingScreen } from './components/LoadingScreen.jsx'
-import { HomeVideo } from './components/HomeVideo.jsx'
+import { HomeFilms } from './components/HomeFilms.jsx'
+import { Cursor } from './components/Cursor.jsx'
 import { Quote } from './components/Quote.jsx'
 import { Services } from './components/Services.jsx'
 import { Projects } from './components/Projects.jsx'
@@ -61,10 +62,9 @@ export default function App() {
   return (
     <>
       <main id="top">
-        {/* Home hero: the scroll-scrubbed film. The former 3D room animation
-            has been removed; the page flows from the video straight into the
-            first quote and About below. */}
-        <HomeVideo />
+        {/* Home opens on the two-film sequence — both scroll-controlled, one
+            continuous shot — and flows from there into the first quote. */}
+        <HomeFilms viewport={viewport} reduced={reduced} />
 
         {/* HOME → QUOTE 1 → ABOUT → QUOTE 2 → SERVICES → QUOTE 3. */}
         <Quote
@@ -115,6 +115,7 @@ export default function App() {
       {phase !== 'live' && (
         <LoadingScreen progress={shown} ready={ready} onDone={handOver} />
       )}
+      <Cursor />
     </>
   )
 }

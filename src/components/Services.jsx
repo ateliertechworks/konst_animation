@@ -32,7 +32,7 @@ export function Services({ viewport, reduced }) {
     <section
       id="services"
       ref={root}
-      aria-label="Konst Design services"
+      aria-label="KONST designs services"
       className="relative bg-cream"
       style={{ height: `${stacked ? TRACK_VH.narrow : TRACK_VH.wide}vh` }}
     >

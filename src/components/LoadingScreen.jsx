@@ -46,7 +46,7 @@ export function LoadingScreen({ progress, ready, onDone }) {
       <div className="absolute inset-0 grid place-items-center">
         <div className="flex flex-col items-center">
           <h1 className="flex overflow-hidden font-display text-[clamp(2rem,7vw,4.6rem)] font-light tracking-brand text-bone">
-            {'KONSTDESIGN'.split('').map((c, i) => (
+            {'KONSTdesigns'.split('').map((c, i) => (
               <span
                 key={i}
                 data-loader-letter

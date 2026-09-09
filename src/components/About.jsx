@@ -48,7 +48,7 @@ export function About({ viewport }) {
     <section
       id="about"
       ref={root}
-      aria-label="About Konst Design"
+      aria-label="About KONST designs"
       className="relative bg-umber"
       style={{ height: `${stacked ? TRACK_VH.narrow : TRACK_VH.wide}vh` }}
     >
