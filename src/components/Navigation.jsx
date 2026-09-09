@@ -1,7 +1,11 @@
 /**
  * Primary navigation. This is one continuous scrolling page, so every item is
- * an in-page anchor that smooth-scrolls to its section (correction §26A) —
- * styling, order and position are unchanged, only the links now resolve.
+ * an in-page anchor that smooth-scrolls to its section.
+ *
+ * The type is deliberately quiet: uppercase, weight 200, and tracked wide
+ * enough that HOME reads as H O M E. Position, spacing, layout, hover and
+ * active treatment, transparency and responsive behaviour are untouched —
+ * only the letterforms changed.
  */
 const ITEMS = [
   { label: 'HOME', target: '#top' },
@@ -35,7 +39,7 @@ export function Navigation() {
                 scrollTo(target)
               }}
               aria-current={i === 0 ? 'page' : undefined}
-              className={`group relative inline-block font-sans text-[11px] tracking-label transition-colors duration-500 lg:text-[12.5px] ${
+              className={`group relative inline-block font-sans text-[10px] font-extralight uppercase tracking-nav transition-colors duration-500 lg:text-[11px] ${
                 i === 0 ? 'text-bone' : 'text-bone/70 hover:text-bone'
               }`}
             >
@@ -51,7 +55,7 @@ export function Navigation() {
       </ul>
 
       {/* compact mark for small screens */}
-      <span className="font-sans text-[11px] tracking-label text-bone-dim md:hidden">
+      <span className="font-sans text-[10px] font-extralight uppercase tracking-nav text-bone-dim md:hidden">
         MENU
       </span>
     </nav>

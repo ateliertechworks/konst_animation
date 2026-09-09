@@ -3,6 +3,11 @@
 @theme {
   --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* A true Didone for the closing wordmark: hairline horizontals against
+     weighted stems, unbracketed serifs cut square. The fallbacks are the
+     other Didones a machine is likely to have — never Times, whose low
+     contrast is the opposite of what this is for. */
+  --font-editorial: 'Bodoni Moda', 'Didot', 'Bodoni MT', 'Playfair Display', serif;
 
   --color-ink: #0b0a09;
   --color-ink-soft: #131110;
@@ -39,13 +44,47 @@ html {
   background: var(--color-ink);
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   THE SCROLLBAR
+   ─────────────────────────────────────────────────────────────────────────
+   A classic scrollbar reserves a gutter beside the page — 32px at a
+   phone-sized viewport — and paints it with the page background, which on this
+   site is near-black. That is the black strip down the right edge, and the
+   width it takes is width the layout does not get, which is what pushed the
+   wordmark off the left of the navigation.
+
+   The whole site is scroll-driven and carries its own progress cues, so the
+   bar is cost without benefit. Removing it hands the full width back and takes
+   the strip with it; scrolling itself is untouched.
+   ───────────────────────────────────────────────────────────────────────── */
+html {
+  /* `overflow-x` lives here rather than on `body`: setting it on the body
+     turns the body into its own scroll container, and the gutter then belongs
+     to the body, where a rule aimed at `html` never reaches it.
+
+     `clip` rather than `hidden` because `hidden` still permits programmatic
+     horizontal scrolling — it only stops the user — whereas `clip` closes it
+     off entirely, and unlike `hidden` it leaves the vertical axis alone
+     instead of forcing a scroll container. */
+  overflow-x: hidden;
+  overflow-x: clip;
+  scrollbar-width: none; /* Firefox */
+}
+body {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 body {
   margin: 0;
   background: var(--color-ink);
   color: var(--color-bone);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -56,6 +95,32 @@ body {
    ───────────────────────────────────────────────────────────────────────── */
 .font-light {
   font-weight: 400;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   THE PINNED PANELS' HEIGHT
+   ─────────────────────────────────────────────────────────────────────────
+   Every pinned section is a sticky child that has to cover the viewport
+   exactly. `100svh` is the SMALLEST the viewport ever gets — the height with
+   the browser's address bar showing — so the moment that bar retracts, which
+   is what happens as soon as you scroll on a phone, the panel is short by the
+   height of the bar and the section's own background shows through as a band
+   along the bottom.
+
+   Even `dvh` cannot be trusted on its own: it is resolved by the CSS engine,
+   and there are contexts where that disagrees with the height the page
+   actually scrolls through, which leaves the same band. So the real viewport
+   is measured in JavaScript and published as `--app-vh` (see `App.jsx`), and
+   that is what the panels are sized by. The unit values below are only the
+   fallback for the first paint, before the measurement lands.
+
+   The address-bar resize this tracks is kept from disturbing the pinned
+   timelines by ScrollTrigger's `ignoreMobileResize`, also set in `App.jsx`.
+   ───────────────────────────────────────────────────────────────────────── */
+.panel-h {
+  height: 100svh;
+  height: 100dvh;
+  height: var(--app-vh, 100dvh);
 }
 
 /* No scroll until the loader hands over. */
@@ -216,6 +281,33 @@ canvas {
 .tracking-label {
   letter-spacing: 0.28em;
 }
+/* the navigation's own tracking — wide enough that HOME reads as H O M E
+   without the words coming apart */
+.tracking-nav {
+  letter-spacing: 0.34em;
+}
+/* the closing wordmark: a Didone needs air around the letters or the thin
+   strokes crowd and the contrast stops reading */
+.tracking-editorial {
+  letter-spacing: 0.16em;
+}
+
+/**
+ * The Didone, held back from going too fine.
+ *
+ * Bodoni Moda carries an optical-size axis, and left alone the browser sets it
+ * from the rendered size — at display size that thins the hairlines until the
+ * thin strokes of K, O and N drop out against a bright frame. Pinning `opsz`
+ * low asks for the small-text cut of the face at large size, which keeps the
+ * hairlines substantial while the stems stay weighted, so it still reads as a
+ * Didone rather than a plain serif. Weight goes to 500, one step, not bold.
+ */
+.font-editorial {
+  font-family: var(--font-editorial);
+  font-weight: 500;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 16;
+}
 
 /* Thin architectural rule that draws itself in. */
 @keyframes hairline-in {
@@ -248,59 +340,44 @@ html[data-cursor-mode='custom'] * {
   cursor: none !important;
 }
 
-[data-cursor-dot],
-[data-cursor-ring] {
+[data-cursor-house] {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 2147483647;
   pointer-events: none;
   opacity: 0;
-  border-radius: 9999px;
+  overflow: visible;
   will-change: transform;
-}
-
-[data-cursor-dot] {
-  width: 5px;
-  height: 5px;
-  background: var(--color-bone);
-  mix-blend-mode: difference;
-  transition: opacity 0.25s ease;
-}
-
-[data-cursor-ring] {
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(237, 231, 222, 0.5);
+  /* a soft brass halo sitting just off the outline — enough to lift the house
+     off a busy photograph, not enough to read as a light source. Two shadows:
+     a tight warm one for the edge and a wider faint one for the bloom. */
+  filter:
+    drop-shadow(0 0 3px rgba(195, 160, 106, 0.85))
+    drop-shadow(0 0 9px rgba(195, 160, 106, 0.45));
   transition:
     opacity 0.25s ease,
-    width 0.35s var(--ease-settle),
-    height 0.35s var(--ease-settle),
-    border-color 0.35s ease,
-    background-color 0.35s ease;
+    scale 0.25s var(--ease-settle),
+    filter 0.3s ease;
 }
 
-/* open and warm over anything clickable */
-[data-cursor-ring][data-over='true'] {
-  width: 54px;
-  height: 54px;
-  border-color: var(--color-brass);
-  background: rgba(195, 160, 106, 0.1);
+/* over anything clickable it does two things: grows a little, and the halo
+   warms up — still no trail, no particles, no pulsing */
+[data-cursor-house][data-over='true'] {
+  scale: 1.18;
+  filter:
+    drop-shadow(0 0 4px rgba(212, 178, 122, 0.95))
+    drop-shadow(0 0 14px rgba(195, 160, 106, 0.6));
+}
+[data-cursor-house][data-down='true'] {
+  scale: 0.92;
+}
+[data-cursor-house][data-over='true'][data-down='true'] {
+  scale: 1.06;
 }
 
-/* tighten while pressed */
-[data-cursor-ring][data-down='true'] {
-  width: 22px;
-  height: 22px;
-}
-[data-cursor-ring][data-over='true'][data-down='true'] {
-  width: 40px;
-  height: 40px;
-}
-
-/* a reader who asks for less motion gets the ring pinned to the pointer */
 @media (prefers-reduced-motion: reduce) {
-  [data-cursor-ring] {
+  [data-cursor-house] {
     transition: opacity 0.25s ease;
   }
 }

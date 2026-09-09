@@ -36,7 +36,7 @@ export function Projects({ viewport }) {
       className="relative bg-about-ground"
       style={{ height: `${stacked ? TRACK_VH.narrow : TRACK_VH.wide}vh` }}
     >
-      <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-about-ground text-bone">
+      <div className="sticky top-0 panel-h w-full overflow-hidden bg-about-ground text-bone">
         {/* Warm brown falling away to near-black, laid over the shared About
             ground so the section's colour stays tied to it: a broad warm pool
             behind the boards, a softer wash from above, and the corners sinking

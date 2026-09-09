@@ -32,11 +32,11 @@ export function Services({ viewport, reduced }) {
     <section
       id="services"
       ref={root}
-      aria-label="KONST designs services"
+      aria-label="KONST DESIGN services"
       className="relative bg-cream"
       style={{ height: `${stacked ? TRACK_VH.narrow : TRACK_VH.wide}vh` }}
     >
-      <div className="sticky top-0 flex h-[100svh] w-full flex-col overflow-hidden bg-cream text-ink">
+      <div className="sticky top-0 flex panel-h w-full flex-col overflow-hidden bg-cream text-ink">
         {/* ── section mark ─────────────────────────────────────────────── */}
         <div className="relative z-20 shrink-0 px-5 pt-7 sm:px-8 lg:px-12">
           <div className="mx-auto flex w-full max-w-[1400px] items-baseline justify-between">

@@ -51,7 +51,7 @@ export function Hero({ live, viewport, reduced }) {
 
   return (
     <section ref={stage} style={{ height: `${STAGE_VH}vh` }} className="relative">
-      <div className="sticky top-0 h-[100svh] w-full overflow-hidden bg-ink">
+      <div className="sticky top-0 panel-h w-full overflow-hidden bg-ink">
         {/* ── the room, and everything that grades it ──────────────────── */}
         <div ref={frame} className={band}>
           <RoomScene mobile={mobile} dpr={mobile ? [1, 1.5] : [1, 1.9]} />

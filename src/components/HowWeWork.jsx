@@ -29,6 +29,13 @@ export function HowWeWork({ reduced = false }) {
     const ctx = gsap.context((self) => {
       const q = (s) => self.selector(s)
 
+      /* How far the photograph travels on its way in, as a percentage of its
+         own width. On a wide screen it sits in seven of twelve columns, so
+         there is room beside it to travel through. On a phone it is already
+         the full width of the screen, and the same 42% throws half the image
+         off the edge — hence the much shorter move below the lg breakpoint. */
+      const ENTER = window.matchMedia('(min-width: 1024px)').matches ? 42 : 10
+
       gsap.from(q('[data-reveal] > *'), {
         opacity: reduced ? 1 : 0, y: reduced ? 0 : 24, duration: 1, ease: 'expo.out', stagger: 0.1,
         scrollTrigger: { trigger: el, start: 'top 72%', once: true },
@@ -49,7 +56,7 @@ export function HowWeWork({ reduced = false }) {
         /* image enters pulled toward page centre, then travels to its side */
         tl.fromTo(
           img,
-          { opacity: 0, scale: 1.14, xPercent: left ? 42 : -42, yPercent: 8 },
+          { opacity: 0, scale: 1.14, xPercent: left ? ENTER : -ENTER, yPercent: 8 },
           { opacity: 1, scale: 1, xPercent: 0, yPercent: 0, ease: 'power2.out', duration: 1 },
           0,
         )
@@ -81,7 +88,7 @@ export function HowWeWork({ reduced = false }) {
             <span className="h-px w-10 bg-cream-line" />
             <span className="font-sans text-[10px] tracking-label text-ink/45">HOW WE WORK</span>
           </div>
-          <p className="mt-8 font-sans text-[10px] tracking-label text-brass">WHY KONST designs?</p>
+          <p className="mt-8 font-sans text-[10px] tracking-label text-brass">WHY KONST DESIGN?</p>
           <h2 className="mt-4 font-display text-[clamp(2.2rem,5vw,4rem)] font-light leading-[1.0] text-ink">
             Four things we<br />never compromise.
           </h2>
@@ -99,7 +106,11 @@ export function HowWeWork({ reduced = false }) {
                 key={p.number}
                 data-row
                 data-side={p.side}
-                className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12"
+                /* the photograph enters at scale 1.14, which makes it wider
+                   than its own column and pushed the document 109px wider than
+                   the window at every breakpoint. Clipping at the row keeps
+                   that growth inside the layout where it belongs. */
+                className="grid items-center gap-8 overflow-hidden lg:grid-cols-12 lg:gap-12"
               >
                 <figure
                   data-row-img
@@ -111,7 +122,7 @@ export function HowWeWork({ reduced = false }) {
                   <div className="aspect-[16/10] w-full">
                     <img
                       src={p.image}
-                      alt={`${p.title} — KONST designs`}
+                      alt={`${p.title} — KONST DESIGN`}
                       loading="lazy"
                       decoding="async"
                       className="h-full w-full object-cover"

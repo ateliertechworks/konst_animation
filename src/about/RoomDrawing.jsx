@@ -1,8 +1,10 @@
 import { memo } from 'react'
 import {
-  ART, BBOX, BTL, BTR, CEIL, CURTAIN, DOOR, FBL, FBR, FRONT, FTL, FTR,
-  FURNITURE, LIGHT_POOL, NICHE, P, PLANT, SLATS, STONE, SURFACE, TRIM,
-  VIEW, WIN, WINR, fx, fy, line, poly, seg,
+  ART, BASE_AO, BBOX, BOARDS, BTL, BTR, CABINET, CEIL, CEIL_OUTER, CONTACT,
+  CURTAIN, DOOR, FBL, FBR, FRONT, FTL, FTR, FURNITURE, LIGHT_POOL, NICHE, P,
+  PENDANT, PENDANT_BAND, RUG, SKIRT, SLATS, SOFA, STONE, SURFACE,
+  TABLE_ROUND, TRIM, VIEW, WIN, WINR,
+  centroid, fx, fy, line, poly, seg,
 } from './geometry.js'
 
 /**
@@ -46,13 +48,38 @@ const Ink = ({ d, w = 1.15, o = 0.78, g }) => (
   />
 )
 
-/** One face-shaded box. `side` picks whichever flank the camera can see. */
-const Solid = ({ b, side = 'right', top, front, dark }) => (
-  <>
-    <path d={poly(b[side])} fill={dark} />
-    <path d={poly(b.front)} fill={front} />
-    <path d={poly(b.top)} fill={top} />
-  </>
+/**
+ * The same three faces, but with each face outlined in its own fill and the
+ * joins rounded. Real furniture has an eased arris — a machined timber edge, a
+ * stuffed cushion seam — and that softening is most of what separates a chair
+ * from a cube. `r` is the edge radius in user units.
+ */
+const Piece = ({ b, side = 'right', top, front, dark, r = 3 }) => (
+  <g strokeLinejoin="round" strokeLinecap="round">
+    <path d={poly(b[side])} fill={dark} stroke={dark} strokeWidth={r} />
+    <path d={poly(b.front)} fill={front} stroke={front} strokeWidth={r} />
+    <path d={poly(b.top)} fill={top} stroke={top} strokeWidth={r} />
+  </g>
+)
+
+/** A horizontal disc — a round table top, a stool seat, a lamp base. */
+const Disc = ({ d, fill, stroke, w = 0 }) => (
+  <ellipse cx={d.cx} cy={d.cy} rx={d.rx} ry={d.ry} fill={fill} stroke={stroke} strokeWidth={w} />
+)
+
+/**
+ * The shadow a piece drops on the floor. Two ellipses: a wide soft one for the
+ * ambient darkening and a tight dense one right at the feet, which is what
+ * actually makes an object look like it is standing on the floor rather than
+ * hovering a centimetre above it.
+ */
+const Contact = ({ d, o = 1 }) => (
+  <g filter="url(#f-soft)" opacity={o}>
+    {/* the wide ambient darkening — it has to spill past the piece to read */}
+    <ellipse cx={d.cx} cy={d.cy + d.ry * 0.12} rx={d.rx * 1.38} ry={d.ry * 1.4} fill="#3a2a1a" opacity="0.3" />
+    {/* and the tight dense core right at the feet */}
+    <ellipse cx={d.cx} cy={d.cy + d.ry * 0.26} rx={d.rx * 0.86} ry={d.ry * 0.72} fill="#1d1409" opacity="0.42" />
+  </g>
 )
 
 /**
@@ -79,6 +106,7 @@ const Sweep = ({ id, bbox, from, pad = 2 }) => (
 )
 
 const F = FURNITURE
+const artC = centroid(ART)
 
 export const RoomDrawing = memo(function RoomDrawing() {
   return (
@@ -103,6 +131,14 @@ export const RoomDrawing = memo(function RoomDrawing() {
         <Sweep id="sw-stone" bbox={BBOX.wallR} from="left" />
 
         {/* the room can only ever be seen through its own frame ------------- */}
+        <clipPath id="sw-art" clipPathUnits="userSpaceOnUse">
+          <path d={poly(ART)} />
+        </clipPath>
+
+        <clipPath id="sw-rug" clipPathUnits="userSpaceOnUse">
+          <path d={poly(FURNITURE.rug)} />
+        </clipPath>
+
         <clipPath id="sw-frame" clipPathUnits="userSpaceOnUse">
           <rect x="0" y="0" width={VIEW.w} height={VIEW.h} />
         </clipPath>
@@ -128,9 +164,79 @@ export const RoomDrawing = memo(function RoomDrawing() {
           <stop offset="0.55" stopColor="#b9c3c6" />
           <stop offset="1" stopColor="#cdbfa6" />
         </linearGradient>
+        {/* one blur, shared by every contact shadow in the room */}
+        <filter id="f-soft" x="-80%" y="-120%" width="260%" height="360%">
+          <feGaussianBlur stdDeviation="9" />
+        </filter>
+
+        {/* light natural oak, laid pale at the back and warming toward the
+            camera — the reference room's floor, not a dark stained one */}
         <linearGradient id="gr-oak" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#6d4a2c" />
-          <stop offset="1" stopColor="#8d6440" />
+          <stop offset="0" stopColor="#cdae84" />
+          <stop offset="1" stopColor="#e2c9a6" />
+        </linearGradient>
+
+        {/* ── materials ────────────────────────────────────────────────────
+            Each is a gradient rather than a flat fill, because a flat fill is
+            exactly what makes vector furniture read as a diagram: real fabric
+            falls off toward its own shadow, real stone is not one colour, and
+            brass has a hot line across it. */}
+        {/* the sofa's charcoal weave */}
+        <linearGradient id="m-fabTop" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#63656a" />
+          <stop offset="1" stopColor="#53555a" />
+        </linearGradient>
+        <linearGradient id="m-fabFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#55575c" />
+          <stop offset="1" stopColor="#44464b" />
+        </linearGradient>
+        <linearGradient id="m-fabSide" x1="0" y1="0" x2="1" y2="0.4">
+          <stop offset="0" stopColor="#42444a" />
+          <stop offset="1" stopColor="#34363b" />
+        </linearGradient>
+        {/* the armchair's taupe */}
+        <linearGradient id="m-taupeTop" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stopColor="#a99f92" />
+          <stop offset="1" stopColor="#968c80" />
+        </linearGradient>
+        <linearGradient id="m-taupeFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#948a7e" />
+          <stop offset="1" stopColor="#7f7669" />
+        </linearGradient>
+        <linearGradient id="m-taupeSide" x1="0" y1="0" x2="1" y2="0.4">
+          <stop offset="0" stopColor="#7d7468" />
+          <stop offset="1" stopColor="#68604f" />
+        </linearGradient>
+        {/* the cream knit thrown over the arm */}
+        <linearGradient id="m-knit" x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0" stopColor="#e9e1d2" />
+          <stop offset="1" stopColor="#d3c9b6" />
+        </linearGradient>
+        <linearGradient id="m-stoneTop" x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0" stopColor="#ddd4c6" />
+          <stop offset="0.45" stopColor="#cbc1b1" />
+          <stop offset="0.7" stopColor="#d6ccbd" />
+          <stop offset="1" stopColor="#c2b8a8" />
+        </linearGradient>
+        <linearGradient id="m-walnutTop" x1="0" y1="0" x2="0.2" y2="1">
+          <stop offset="0" stopColor="#75634f" />
+          <stop offset="1" stopColor="#5d4e3e" />
+        </linearGradient>
+        <linearGradient id="m-walnutFront" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5b4c3d" />
+          <stop offset="1" stopColor="#463a2e" />
+        </linearGradient>
+        <linearGradient id="m-brass" x1="0" y1="0" x2="1" y2="0.6">
+          <stop offset="0" stopColor="#a98851" />
+          <stop offset="0.42" stopColor="#dcbc82" />
+          <stop offset="0.6" stopColor="#c3a06a" />
+          <stop offset="1" stopColor="#8e7346" />
+        </linearGradient>
+        {/* the warm wash the window throws across the floor */}
+        <linearGradient id="m-daylight" x1="0.7" y1="0" x2="0.1" y2="1">
+          <stop offset="0" stopColor="#ffeccb" stopOpacity="0.5" />
+          <stop offset="0.55" stopColor="#ffe6bd" stopOpacity="0.18" />
+          <stop offset="1" stopColor="#ffe0b2" stopOpacity="0" />
         </linearGradient>
         <linearGradient id="gr-stone" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#c9c2b5" />
@@ -214,10 +320,10 @@ export const RoomDrawing = memo(function RoomDrawing() {
         {/* ══ INTERIOR ════════════════════════════════════════════════════ */}
         <g data-layer="interior">
           {/* 1 · paint, one surface at a time */}
-          <g clipPath="url(#sw-pB)"><path d={SURFACE.wallB} fill="#d9d0c2" /></g>
-          <g clipPath="url(#sw-pL)"><path d={SURFACE.wallL} fill="#cfc6b8" /></g>
-          <g clipPath="url(#sw-pR)"><path d={SURFACE.wallR} fill="#c6bdb0" /></g>
-          <g clipPath="url(#sw-pC)"><path d={SURFACE.ceiling} fill="#e3dcd1" /></g>
+          <g clipPath="url(#sw-pB)"><path d={SURFACE.wallB} fill="#ded7ca" /></g>
+          <g clipPath="url(#sw-pL)"><path d={SURFACE.wallL} fill="#d5cec1" /></g>
+          <g clipPath="url(#sw-pR)"><path d={SURFACE.wallR} fill="#ccc5b8" /></g>
+          <g clipPath="url(#sw-pC)"><path d={SURFACE.ceiling} fill="#f0ebe1" /></g>
 
           {/* 2 · wall materials */}
           <g data-layer="materials">
@@ -244,75 +350,155 @@ export const RoomDrawing = memo(function RoomDrawing() {
             <path d={seg(NICHE.shelf[0], NICHE.shelf[1])} stroke="#c3a06a" strokeWidth="2.6" />
           </g>
 
-          {/* 3 · ceiling design, developed from the architectural ceiling */}
+          {/* 3 · ceiling design, then the lighting that belongs to it — the
+                cove and the hanging fitting settle together, before any
+                built-in or loose furniture arrives */}
           <g data-layer="ceiling">
-            <path data-a="c-recess" d={poly(CEIL.recess)} fill="#d5cec3" opacity="0" />
-            <path data-a="c-cove" d={poly(CEIL.cove)} fill="#c8c0b4" opacity="0" />
+            {/* three stepped planes, each a shade lighter than the one outside
+                it, with the cove reading as a warm line in the reveal rather
+                than as a lit panel — the reference ceiling is stepped joinery
+                catching light, not a luminous ceiling */}
+            <path data-a="c-recess" d={poly(CEIL_OUTER)} fill="#e6e0d4" opacity="0" />
+            <path data-a="c-recess" d={poly(CEIL.recess)} fill="#ece7dc" opacity="0" />
+            <g data-a="c-cove" opacity="0">
+              <path d={poly(CEIL.cove)} fill="#f2ede2" />
+              <path d={poly(CEIL.recess)} fill="none" stroke="#f7e6c4" strokeWidth="5" opacity="0.85" />
+              <path d={poly(CEIL.cove)} fill="none" stroke="#d8d1c4" strokeWidth="1.2" />
+            </g>
+            <g data-a="c-cove" opacity="0">
+              {/* the warm line the cove throws back at the ceiling */}
+              <path d={poly(CEIL.recess)} fill="url(#m-daylight)" opacity="0.8" />
+              {/* the pendant: cord, drum shade, and the pool it casts below */}
+              <path d={seg(PENDANT.cord[0], PENDANT.cord[1])} stroke="#4c453c" strokeWidth="1.5" />
+              <Piece b={PENDANT.shadeEdge} side="right" top="#e6dbc4" front="#dbcfb6" dark="#c5b99f" r={2.4} />
+              <Piece b={PENDANT_BAND} side="right" top="url(#m-brass)" front="url(#m-brass)" dark="#8e7346" r={1.6} />
+              <Disc d={PENDANT.shadeTop} fill="#efe6d2" />
+              <Disc d={PENDANT.shadeBottom} fill="#f6e9c8" />
+              <ellipse cx={PENDANT.glow[0]} cy={PENDANT.glow[1]} rx="86" ry="34" fill="#f0d8a8" opacity="0.16" />
+            </g>
           </g>
 
           {/* 4 · floor design */}
           <g clipPath="url(#sw-fFin)">
             <path d={SURFACE.floor} fill="url(#gr-oak)" />
+            {/* board joints — perspective lines through the floor plane, so
+                they converge on the same vanishing point as the room */}
+            <g stroke="#a8875f" strokeWidth="0.9" opacity="0.34">
+              {BOARDS.joints.map((j, i) => (
+                <path key={i} d={seg(j[0], j[1])} />
+              ))}
+            </g>
+            <g stroke="#a8875f" strokeWidth="0.7" opacity="0.2">
+              {BOARDS.ends.map((e, i) => (
+                <path key={i} d={seg(e[0], e[1])} />
+              ))}
+            </g>
           </g>
           <g data-a="f-sheen" opacity="0">
             <path d={SURFACE.floor} fill="url(#gr-floorFade)" opacity="0.35" />
+            {/* daylight off the window, raked across the boards */}
+            <path d={poly(LIGHT_POOL)} fill="url(#m-daylight)" />
+            {/* white painted skirting, as in the reference room */}
+            <g>
+              <path d={poly(SKIRT.left)} fill="#f4f1ea" />
+              <path d={poly(SKIRT.right)} fill="#e8e4dc" />
+              <path d={poly(SKIRT.back)} fill="#efece4" />
+            </g>
+            {/* the room's own ambient occlusion, where the walls meet the floor */}
+            <g filter="url(#f-soft)" opacity="0.4">
+              <path d={poly(BASE_AO.left)} fill="#2d2013" opacity="0.5" />
+              <path d={poly(BASE_AO.right)} fill="#2d2013" opacity="0.5" />
+              <path d={poly(BASE_AO.back)} fill="#2d2013" opacity="0.42" />
+            </g>
           </g>
 
           {/* 5 · furniture, one element at a time */}
           <g data-layer="furniture">
-            <g data-a="f-rug" opacity="0">
-              <path d={poly(FURNITURE.rug)} fill="#b6aa94" />
-              <path d={poly(FURNITURE.rug)} fill="none" stroke="#6f6350" strokeWidth="2.4" />
-            </g>
-
-            <g data-a="f-console" opacity="0">
-              <Solid b={F.console} side="left" top="#6a5a49" front="#55483a" dark="#423830" />
-            </g>
-
-            <g data-a="f-sofa" opacity="0">
-              <Solid b={F.sofaSeat} side="right" top="#a05f38" front="#8a4f2d" dark="#6f3f24" />
-              <Solid b={F.sofaBack} side="right" top="#ab6a41" front="#955732" dark="#754427" />
-              <Solid b={F.sofaArmL} side="right" top="#a3623a" front="#8d522f" dark="#714026" />
-              <Solid b={F.sofaArmR} side="right" top="#a3623a" front="#8d522f" dark="#714026" />
-            </g>
-
-            <g data-a="f-table" opacity="0">
-              <Solid b={F.table} side="right" top="#3f342a" front="#31281f" dark="#272019" />
-            </g>
-
-            <g data-a="f-chair" opacity="0">
-              <Solid b={F.chairSeat} side="left" top="#cfc3b1" front="#bcb09e" dark="#a49984" />
-              <Solid b={F.chairBack} side="left" top="#d4c8b6" front="#c2b6a4" dark="#a99e89" />
-            </g>
-
-            <g data-a="f-side" opacity="0">
-              <Solid b={F.side} side="left" top="#c3a06a" front="#a88754" dark="#8e7346" />
-            </g>
-
+            {/* The curtains hang on the BACK wall, so they are painted before
+                anything standing on the floor in front of them. They used to be
+                drawn last, which put a pale vertical band straight across the
+                sofa — paint order has to follow depth even though the timeline
+                brings them in late. Their beat is unchanged. */}
             <g data-a="f-curtain" opacity="0">
               <path d={poly(CURTAIN.l)} fill="#ded0b8" />
               <path d={poly(CURTAIN.r)} fill="#d5c7af" />
             </g>
+
+            <g data-a="f-rug" opacity="0">
+              <path d={poly(FURNITURE.rug)} fill="#e2ddd1" />
+              <g clipPath="url(#sw-rug)" stroke="#9aa0a2" strokeWidth="1" opacity="0.42">
+                {RUG.lattice.map((l, i) => (
+                  <path key={i} d={seg(l[0], l[1])} />
+                ))}
+              </g>
+              <path d={poly(RUG.border)} fill="none" stroke="#a9a496" strokeWidth="1.6" opacity="0.7" />
+              <path d={poly(FURNITURE.rug)} fill="none" stroke="#b8b2a2" strokeWidth="2.4" />
+            </g>
+
+            {/* CABINETRY — a carcass lifted on a recessed plinth, its face
+                split by a reveal into two drawers, each with a slim pull */}
+            <g data-a="f-console" opacity="0">
+              <Contact d={CONTACT.cabinet} />
+              <Piece b={CABINET.plinth} side="left" top="#2b241d" front="#241e18" dark="#1d1813" r={2} />
+              <Piece b={CABINET.carcass} side="left" top="url(#m-walnutTop)" front="url(#m-walnutFront)" dark="#3a3028" r={3.5} />
+              <path d={poly(CABINET.drawerA.front)} fill="#5d4f40" />
+              <path d={poly(CABINET.drawerB.front)} fill="#5d4f40" />
+              <path d={poly(CABINET.drawerA.front)} fill="none" stroke="#3a3128" strokeWidth="1.1" />
+              <path d={poly(CABINET.drawerB.front)} fill="none" stroke="#3a3128" strokeWidth="1.1" />
+              <path d={seg(CABINET.pullA[0], CABINET.pullA[1])} stroke="#c3a06a" strokeWidth="2.2" strokeLinecap="round" />
+              <path d={seg(CABINET.pullB[0], CABINET.pullB[1])} stroke="#c3a06a" strokeWidth="2.2" strokeLinecap="round" />
+            </g>
+
+            {/* SOFA — legs, a recessed plinth, two seat cushions divided by a
+                seam, two back cushions and arms standing proud of the seat */}
+            <g data-a="f-sofa" opacity="0">
+              <Contact d={CONTACT.sofa} />
+              {SOFA.legs.map((l, i) => (
+                <Piece key={i} b={l} side="right" top="#3a2f24" front="#2e251c" dark="#241d16" r={1.6} />
+              ))}
+              <Piece b={SOFA.plinth} side="right" top="#6d665e" front="#5c5650" dark="#4b4640" r={2.5} />
+              <Piece b={SOFA.armL} side="right" top="url(#m-fabTop)" front="url(#m-fabFront)" dark="url(#m-fabSide)" r={7} />
+              {SOFA.back.map((b, i) => (
+                <Piece key={`b${i}`} b={b} side="right" top="url(#m-fabTop)" front="url(#m-fabFront)" dark="url(#m-fabSide)" r={6} />
+              ))}
+              {SOFA.seat.map((b, i) => (
+                <Piece key={`s${i}`} b={b} side="right" top="url(#m-fabTop)" front="url(#m-fabFront)" dark="url(#m-fabSide)" r={6} />
+              ))}
+              <Piece b={SOFA.armR} side="right" top="url(#m-fabTop)" front="url(#m-fabFront)" dark="url(#m-fabSide)" r={7} />
+            </g>
+
+            {/* COFFEE TABLE — a pale round top carried on a slim dark frame,
+                so the rug reads right through underneath it */}
+            <g data-a="f-table" opacity="0">
+              <Contact d={CONTACT.table} o={0.85} />
+              <Disc d={TABLE_ROUND.ring} fill="#8e7346" />
+              <Piece b={TABLE_ROUND.stemL} side="right" top="url(#m-brass)" front="#8e7346" dark="#75603a" r={1.2} />
+              <Piece b={TABLE_ROUND.stemR} side="right" top="url(#m-brass)" front="#8e7346" dark="#75603a" r={1.2} />
+              <Disc d={TABLE_ROUND.under} fill="#a69f91" />
+              <Disc d={TABLE_ROUND.top} fill="#e8e2d6" stroke="#c2bbac" w={1} />
+            </g>
+
+            {/* The armchair and the pedestal side table have been removed —
+                the room is a single large sofa and its table. Their beats are
+                left in place and simply carry nothing, so the timeline is
+                untouched and everything after them still arrives on cue. */}
           </g>
 
           {/* 6 · decoration — the last layer; the room is simply finished */}
           <g data-layer="decor">
             <g data-a="d-art" opacity="0">
-              <path d={poly(ART)} fill="#2f2b27" />
-              <path d={poly(ART)} fill="none" stroke="#c3a06a" strokeWidth="1.6" />
-            </g>
-            <g data-a="d-plant" opacity="0">
-              <Solid b={PLANT.pot} side="right" top="#7d6f60" front="#6a5d50" dark="#564b41" />
-              <path d={seg(PLANT.stem[0], PLANT.stem[1])} stroke="#4f5f42" strokeWidth="2.4" />
-              <ellipse cx={PLANT.canopy[0]} cy={PLANT.canopy[1]} rx="27" ry="22" fill="#4a5c3e" />
-              <ellipse cx={PLANT.canopy[0] - 12} cy={PLANT.canopy[1] + 13} rx="18" ry="13" fill="#556a46" />
-            </g>
-            <g data-a="d-cushion" opacity="0">
-              <Solid b={F.cushA} side="right" top="#d8c6a6" front="#c8b591" dark="#b19f7d" />
-              <Solid b={F.cushB} side="right" top="#7d5f3f" front="#6d5235" dark="#59422a" />
+              <path d={poly(ART)} fill="#efeae0" />
+              <path d={poly(ART)} fill="none" stroke="#1c1a18" strokeWidth="4" />
+              {/* soft painterly masses — the reference canvas is washed, not
+                  drawn, so nothing here is a straight line */}
+              <g clipPath="url(#sw-art)">
+                <ellipse cx={artC[0] - 6} cy={artC[1] - 16} rx="15" ry="30" fill="#2b2f38" opacity="0.7" />
+                <ellipse cx={artC[0] + 7} cy={artC[1] + 14} rx="12" ry="24" fill="#8b8c8e" opacity="0.45" />
+                <ellipse cx={artC[0] + 2} cy={artC[1] + 2} rx="8" ry="17" fill="#c3a06a" opacity="0.55" />
+              </g>
             </g>
             <g data-a="d-objects" opacity="0">
-              <ellipse cx={F.tableTopC[0]} cy={F.tableTopC[1]} rx="16" ry="6" fill="#c3a06a" />
+              <ellipse cx={F.tableTopC[0]} cy={F.tableTopC[1]} rx="16" ry="6" fill="url(#m-brass)" />
               <ellipse cx={F.consoleTopC[0]} cy={F.consoleTopC[1]} rx="11" ry="5" fill="#cfc4b2" />
               <rect
                 x={F.sideTopC[0] - 9}

@@ -111,7 +111,7 @@ export function Studios({ viewport, reduced = false }) {
       className="relative bg-cream"
       style={{ height: `${TRACK_VH}vh` }}
     >
-      <div className="sticky top-0 flex h-[100svh] w-full flex-col overflow-hidden bg-cream lg:grid lg:grid-cols-2">
+      <div className="sticky top-0 flex panel-h w-full flex-col overflow-hidden bg-cream lg:grid lg:grid-cols-2">
         {/* ── realistic map (left 50%) ─────────────────────────────────── */}
         <div className="relative h-[44svh] min-h-0 overflow-hidden border-b border-cream-line bg-[#d9e2e6] lg:h-full lg:border-b-0 lg:border-r">
           <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full">

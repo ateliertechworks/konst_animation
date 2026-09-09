@@ -28,6 +28,56 @@ export default function App() {
   // asset-progress gate.
   const [pct, setPct] = useState(0)
 
+  /**
+   * The pinned panels have to cover the viewport exactly, or the section's own
+   * background shows through as a band along the bottom — which on the dark
+   * sections reads as a black stripe on a phone.
+   *
+   * Viewport units alone do not settle it: `svh` is the height with the
+   * address bar showing, so the band appears the moment that bar retracts, and
+   * even `dvh` is resolved by the CSS engine and can disagree with the height
+   * the page actually scrolls through. So the viewport is measured here and
+   * published as `--app-vh`, which is what `.panel-h` reads.
+   *
+   * The measurement is re-taken on resize and on the visual viewport's own
+   * changes, rAF-batched, and only written when it actually moved — and
+   * `ignoreMobileResize` stops the address bar's resize from making
+   * ScrollTrigger recalculate every pin mid-scroll.
+   */
+  useEffect(() => {
+    ScrollTrigger.config({ ignoreMobileResize: true })
+
+    let raf = 0
+    let last = 0
+    const measure = () => {
+      raf = 0
+      /* Whichever of the two is larger. `innerHeight` is the layout viewport
+         the page actually scrolls through; `visualViewport` is what is on
+         screen right now. They disagree in both directions depending on the
+         browser and whether the address bar is out, and covering the LARGER
+         is the only choice that can never leave a strip of the section
+         showing underneath. */
+      const h = Math.round(Math.max(window.innerHeight || 0, window.visualViewport?.height || 0))
+      if (!h || Math.abs(h - last) < 1) return
+      last = h
+      document.documentElement.style.setProperty('--app-vh', `${h}px`)
+    }
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(measure)
+    }
+    measure()
+
+    window.addEventListener('resize', schedule)
+    window.addEventListener('orientationchange', schedule)
+    window.visualViewport?.addEventListener('resize', schedule)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', schedule)
+      window.removeEventListener('orientationchange', schedule)
+      window.visualViewport?.removeEventListener('resize', schedule)
+    }
+  }, [])
+
   useEffect(() => {
     setReducedMotion(reduced)
     gsap.globalTimeline.timeScale(reduced ? 2.8 : 1)

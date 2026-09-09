@@ -48,12 +48,12 @@ export function About({ viewport }) {
     <section
       id="about"
       ref={root}
-      aria-label="About KONST designs"
+      aria-label="About KONST DESIGN"
       className="relative bg-umber"
       style={{ height: `${stacked ? TRACK_VH.narrow : TRACK_VH.wide}vh` }}
     >
       <div
-        className="sticky top-0 h-[100svh] w-full overflow-hidden bg-about"
+        className="sticky top-0 panel-h w-full overflow-hidden bg-about"
         onPointerMove={stacked ? undefined : onMove}
         onPointerLeave={onLeave}
       >
