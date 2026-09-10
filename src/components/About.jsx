@@ -6,6 +6,10 @@ import { STAGES } from '../data/about.js'
 /** Scroll budget for the pinned sequence, in viewport heights. */
 const TRACK_VH = { wide: 640, narrow: 560 }
 
+/** Stage 3's interior — a real film, not a drawing. Referenced from `public/`
+ *  by absolute URL so the build copies it as-is and it resolves on Vercel. */
+const INTERIOR_FILM = '/assets/video/interior.mp4'
+
 /**
  * ─────────────────────────────────────────────────────────────────────────────
  *  ABOUT US
@@ -81,10 +85,25 @@ export function About({ viewport }) {
         >
           <div
             data-fly
-            className={stacked ? 'w-[94vw] max-w-[580px]' : 'w-[48vw] max-w-[860px]'}
+            className={`relative ${stacked ? 'w-[94vw] max-w-[580px]' : 'w-[48vw] max-w-[860px]'}`}
             style={{ willChange: 'transform' }}
           >
             <RoomDrawing />
+            {/* Stage 3. It sits in the same frame the drawing occupies and
+                travels with it, so the completed room simply becomes the real
+                interior in place. It never plays itself — no `autoplay`, no
+                `loop`, no controls, and `play()` is never called; its playhead
+                is the scroll position (see `useAboutTimeline.js`). */}
+            <video
+              data-interior
+              className="absolute inset-0 h-full w-full object-cover"
+              src={INTERIOR_FILM}
+              muted
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+              style={{ opacity: 0, willChange: 'opacity' }}
+            />
           </div>
         </div>
 

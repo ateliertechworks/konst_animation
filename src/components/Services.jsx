@@ -25,8 +25,26 @@ export function Services({ viewport, reduced }) {
   useServicesTimeline(root, track, { reduced })
 
   const total = SERVICES.length
-  // smaller than before — a refined editorial filmstrip, not a wall of images
-  const panelH = stacked ? '40vh' : '46vh'
+  /**
+   * On a wide screen the filmstrip is sized by HEIGHT: every card is the same
+   * height and its width follows the photograph's own ratio, which is what
+   * gives the strip its varied rhythm.
+   *
+   * A phone cannot afford that. At 40vh a 16:9 card comes out 578px wide on a
+   * 375px screen — you never see a whole one. So below the breakpoint the
+   * cards are sized by WIDTH instead: a fixed share of the viewport, with the
+   * height derived from the same ratio. The photographs keep their true
+   * proportions, a whole card fits, and the next one peeks in at the edge.
+   */
+  const panelH = '46vh'
+  /* 74vw leaves roughly a quarter of the screen spare beside a card, so a
+     whole photograph actually sits in frame as the strip travels rather than
+     always straddling an edge */
+  const cardW = '74vw'
+  const cardBox = (ratio) =>
+    stacked
+      ? { width: cardW, height: `calc(${cardW} / ${ratio})` }
+      : { height: panelH, width: `calc(${panelH} * ${ratio})` }
 
   return (
     <section
@@ -60,7 +78,7 @@ export function Services({ viewport, reduced }) {
         <div className="relative flex min-h-0 flex-1 items-center">
           <div
             ref={track}
-            className="flex items-end gap-6 px-[6vw] will-change-transform sm:gap-9 lg:gap-14"
+            className="flex items-end gap-4 px-[6vw] will-change-transform sm:gap-9 lg:gap-14"
             style={{ transform: 'translate3d(0,0,0)' }}
           >
             {SERVICES.map((s) => (
@@ -76,8 +94,7 @@ export function Services({ viewport, reduced }) {
                   aria-label={`Open ${s.title}`}
                   className="block origin-bottom cursor-pointer overflow-hidden rounded-[3px] shadow-[0_24px_60px_-30px_rgba(60,45,24,0.55)] outline-none transition-[opacity,transform] duration-500 ease-[cubic-bezier(.16,1,.3,1)] focus-visible:ring-2 focus-visible:ring-brass"
                   style={{
-                    height: panelH,
-                    width: `calc(${panelH} * ${s.ratio})`,
+                    ...cardBox(s.ratio),
                     opacity: 'calc(0.62 + 0.38 * var(--focus))',
                     transform: 'scale(calc(0.965 + 0.035 * var(--focus)))',
                   }}

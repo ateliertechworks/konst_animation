@@ -2,6 +2,7 @@ import { useLayoutEffect } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SK_LEN } from './RoomDrawing.jsx'
+import { attachScrubber } from '../lib/videoScrubber.js'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -21,7 +22,7 @@ gsap.registerPlugin(ScrollTrigger)
  *    20 – 35   the completed drawing flies LEFT → CENTRE → RIGHT
  *    35 – 70   the same lines gain surface, depth and shadow
  *    70 – 80   the completed empty room flies RIGHT → CENTRE → LEFT
- *    80 – 100  paint → materials → ceiling → floor → furniture → decoration
+ *    80 – 100  the real interior film, its playhead tied to the same scroll
  *
  *  Each stage is finished before the next one is allowed to begin: no range
  *  below overlaps a range in another stage.
@@ -44,6 +45,7 @@ export function useAboutTimeline(scopeRef, { mobile, enabled = true }) {
     const ctx = gsap.context((self) => {
       const q = (sel) => self.selector(sel)
       const fly = q('[data-fly]')[0]
+      const cleanups = []
 
       /* ── initial state ────────────────────────────────────────────────
          Set here rather than in the markup so the timeline owns every value
@@ -152,40 +154,33 @@ export function useAboutTimeline(scopeRef, { mobile, enabled = true }) {
       tl.to(q('[data-panel="2"]'), { opacity: 0, y: -18, duration: 4 }, 70)
         .to(q('[data-panel="3"]'), { opacity: 1, y: 0, duration: 4 }, 76)
 
-      /* ═══ STAGE 3 · the empty room becomes an interior ═══════════════ */
-      /* paint, one surface at a time — never the whole room at once */
-      sweep('sw-pB', 80, 83.0)
-      sweep('sw-pL', 82.4, 85.0)
-      sweep('sw-pR', 84.2, 86.6)
-      sweep('sw-pC', 85.8, 87.6)
-      /* wall materials */
-      show('m-slat', 86.8, 89.4)
-      sweep('sw-stone', 88.2, 90.4)
-      show('m-stone', 88.2, 89.8)
-      show('i-depth', 87.6, 89.8)
-      /* ceiling design, developed out of the architectural ceiling */
-      show('i-niche', 89.2, 90.8)
-      show('c-recess', 89.8, 91.2)
-      show('c-cove', 90.4, 91.8)
-      /* floor design */
-      sweep('sw-fFin', 90.6, 92.6)
-      show('f-sheen', 92.2, 93.6)
-      /* furniture, one element at a time */
-      show('f-rug', 92.4, 93.8)
-      show('f-console', 93.2, 94.4)
-      show('f-sofa', 93.8, 95.2)
-      show('f-table', 94.8, 96.0)
-      show('f-chair', 95.5, 96.7)
-      show('f-side', 96.2, 97.3)
-      show('f-curtain', 96.9, 98.0)
-      /* decoration, after the major pieces and deliberately sparse. This is
-         the end of the sequence: the room finishes because it is furnished,
-         not because a lighting rig switches on over the top of it. */
-      show('d-plant', 97.4, 98.5)
-      show('d-art', 97.9, 98.9)
-      show('d-cushion', 98.4, 99.3)
-      show('d-objects', 98.9, TOTAL)
-      tl.to(q('[data-layer="sketch"]'), { opacity: 0.16, duration: 4 }, 95)
+      /* ═══ STAGE 3 · the real interior ════════════════════════════════
+         The artificial interior that used to be drawn here is gone. What
+         happens now is that the finished shell dissolves into an actual film
+         of the room, in the same frame, and that film's playhead is this same
+         scrubbed timeline — so it runs forward as the reader scrolls down,
+         backward as they scroll up, and freezes the instant they stop.
+
+         It is never played: no `autoplay`, no `loop`, no controls, and
+         `play()` is never called anywhere. The only thing that moves it is
+         the number below. */
+      const film = q('[data-interior]')[0]
+      if (film) {
+        const scrub = attachScrubber(film)
+        cleanups.push(scrub.dispose)
+
+        /* the shell simply becomes the film — a plain crossfade, nothing
+           layered on top of it */
+        tl.to(film, { opacity: 1, duration: 5, ease: 'none' }, 80)
+
+        /* and the film runs across the whole of stage 3, 1:1 with scroll */
+        const head = { t: 0 }
+        tl.to(
+          head,
+          { t: 1, duration: TOTAL - 80, ease: 'none', onUpdate: () => scrub.seek(head.t) },
+          80,
+        )
+      }
 
       /* the rail, and the three stage ticks */
       tl.fromTo(q('[data-rail-fill]'), { scaleY: 0 }, { scaleY: 1, duration: TOTAL }, 0)
@@ -198,6 +193,8 @@ export function useAboutTimeline(scopeRef, { mobile, enabled = true }) {
       // The timeline is exactly TOTAL long whatever the last tween ended at,
       // so the scroll budget above stays honest.
       tl.set({}, {}, TOTAL)
+
+      return () => cleanups.forEach((fn) => fn())
     }, scopeRef)
 
     return () => ctx.revert()
